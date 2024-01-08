@@ -2,59 +2,61 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CategoryResource\Pages;
-use App\Filament\Resources\CategoryResource\RelationManagers;
-use App\Models\Category;
+use App\Filament\Resources\SubCategoryResource\Pages;
+use App\Filament\Resources\SubCategoryResource\RelationManagers;
+use App\Models\SubCategory;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Filament\Tables\Columns\TextColumn;
 
-class CategoryResource extends Resource
+class SubCategoryResource extends Resource
 {
-    protected static ?string $model = Category::class;
+    protected static ?string $model = SubCategory::class;
     protected static ?string $navigationIcon = 'heroicon-o-chevron-right';
 
     protected static ?string $navigationGroup = 'Definitions';
 
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                TextInput::make('category_name')
-                ->unique(ignoreRecord: true)
+                Select::make('category_id')->label('Category Name')
+                ->relationship(name:'Category',titleAttribute:'category_name')
+                ->native(false)
                 ->required(),
-                Select::make('category_status')
+                TextInput::make('sub_category_name')->required()
+                ->unique(),
+                Select::make('status')
                 ->options([
                     'active'=>'Active',
                     'inactive'=>'Inactive',
                 ])->native(false)->required(),
-                TextInput::make('order')->numeric()->required(),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->columns([
-                TextColumn::make('category_name')
-                ->searchable(),
-                TextColumn::make('category_status')
-                ->badge()
-                ->color(fn (string $state): string => match ($state) {
-                    'active' => 'success',
-                    'inactive' => 'danger',
-                }),
-                TextColumn::make('order')->sortable(),
-            ])
+        ->columns([
+            TextColumn::make('Category.category_name')
+            ->searchable(),
+            TextColumn::make('status')
+            ->badge()
+            ->color(fn (string $state): string => match ($state) {
+                'active' => 'success',
+                'inactive' => 'danger',
+            }),
+            TextColumn::make('sub_category_name')->sortable(),
+        ])
             ->filters([
                 //
             ])
@@ -79,9 +81,9 @@ class CategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCategories::route('/'),
-            'create' => Pages\CreateCategory::route('/create'),
-            'edit' => Pages\EditCategory::route('/{record}/edit'),
+            'index' => Pages\ListSubCategories::route('/'),
+            'create' => Pages\CreateSubCategory::route('/create'),
+            'edit' => Pages\EditSubCategory::route('/{record}/edit'),
         ];
     }
 }
